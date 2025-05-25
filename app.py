@@ -84,11 +84,11 @@ def ollama_chat(message, history, model_name, history_flag):
         history_flag: Whether to include chat history
         
     Returns:
-        The generated response, streamed word by word
+        The updated chat history with new message pairs
     """
     try:
         logger.info(f"Chat request for model: {model_name}")
-        messages = []
+        ollama_messages = []
         chat_message = {
             'role': 'user', 
             'content': message
@@ -103,58 +103,114 @@ def ollama_chat(message, history, model_name, history_flag):
                         'role': 'user', 
                         'content': element[0]
                     }
-                    messages.append(history_user_message)
+                    ollama_messages.append(history_user_message)
                     
                 if element[1] is not None:
                     history_assistant_message = {
                         'role': 'assistant', 
                         'content': element[1]
                     }
-                    messages.append(history_assistant_message)   
+                    ollama_messages.append(history_assistant_message)   
         
-        messages.append(chat_message)
-        logger.info(f"Sending {len(messages)} messages to {model_name}")
+        ollama_messages.append(chat_message)
+        logger.info(f"Sending {len(ollama_messages)} messages to {model_name}")
+        
+        # First, add the user message to the chat history
+        new_history = history + [(message, None)]
         
         # Stream the response from Ollama
-        stream = ollama.chat(
-            model=model_name,
-            messages=messages,
-            stream=True
-        )
-        
-        partial_message = ""
-        for chunk in stream:
-            if chunk and 'message' in chunk and 'content' in chunk['message'] and len(chunk['message']['content']) != 0:
-                partial_message = partial_message + chunk['message']['content']
-                yield partial_message
+        try:
+            stream = ollama.chat(
+                model=model_name,
+                messages=ollama_messages,
+                stream=True
+            )
+            
+            partial_message = ""
+            for chunk in stream:
+                if chunk and 'message' in chunk and 'content' in chunk['message'] and len(chunk['message']['content']) != 0:
+                    partial_message = partial_message + chunk['message']['content']
+                    # Update the last response in history
+                    new_history[-1] = (message, partial_message)
+                    yield new_history
+        except Exception as e:
+            # Handle streaming error
+            error_message = f"Error: {str(e)}"
+            logger.error(f"Streaming error in ollama_chat: {str(e)}")
+            # Update the last response with the error message
+            new_history[-1] = (message, error_message)
+            yield new_history
+            
     except Exception as e:
+        # Handle overall function error
         error_message = f"Error: {str(e)}"
-        logger.error(f"Error in ollama_chat: {str(e)}")
-        # For streaming to a chatbot, we need to yield properly formatted messages
-        yield error_message
+        logger.error(f"General error in ollama_chat: {str(e)}")
+        # Create a properly formatted history with the error message
+        new_history = history + [(message, error_message)]
+        yield new_history
 # Agent generation
-def ollama_prompt(message, history,model_name,prompt_info):
-    messages = []
-    system_message = {
-        'role': 'system', 
-        'content': PROMPT_DICT[prompt_info]
-    }
-    user_message = {
-        'role': 'user', 
-        'content': message
-    }
-    messages.append(system_message)
-    messages.append(user_message)
-    stream = ollama.chat(
-        model = model_name,
-        messages = messages,       
-        stream=True
-    )
-    partial_message = ""
-    for chunk in stream:
-        if len(chunk['message']['content']) != 0:
-            partial_message = partial_message + chunk['message']['content']
-            yield partial_message
+def ollama_prompt(message, history, model_name, prompt_info):
+    """
+    Chat function for Ollama models with specific prompt templates.
+    
+    Args:
+        message: User message
+        history: Chat history
+        model_name: Name of the Ollama model to use
+        prompt_info: The prompt template to use
+        
+    Returns:
+        The updated chat history with new message pairs
+    """
+    try:
+        logger.info(f"Prompt request for model: {model_name}, prompt: {prompt_info}")
+        
+        # Prepare messages for Ollama API
+        ollama_messages = []
+        system_message = {
+            'role': 'system', 
+            'content': PROMPT_DICT[prompt_info]
+        }
+        user_message = {
+            'role': 'user', 
+            'content': message
+        }
+        ollama_messages.append(system_message)
+        ollama_messages.append(user_message)
+        
+        # First, add the user message to the chat history
+        new_history = history + [(message, None)]
+        
+        # Stream the response from Ollama
+        try:
+            stream = ollama.chat(
+                model=model_name,
+                messages=ollama_messages,
+                stream=True
+            )
+            
+            partial_message = ""
+            for chunk in stream:
+                if chunk and 'message' in chunk and 'content' in chunk['message'] and len(chunk['message']['content']) != 0:
+                    partial_message = partial_message + chunk['message']['content']
+                    # Update the last response in history
+                    new_history[-1] = (message, partial_message)
+                    yield new_history
+        except Exception as e:
+            # Handle streaming error
+            error_message = f"Error: {str(e)}"
+            logger.error(f"Streaming error in ollama_prompt: {str(e)}")
+            # Update the last response with the error message
+            new_history[-1] = (message, error_message)
+            yield new_history
+            
+    except Exception as e:
+        # Handle overall function error
+        error_message = f"Error: {str(e)}"
+        logger.error(f"General error in ollama_prompt: {str(e)}")
+        # Create a properly formatted history with the error message
+        new_history = history + [(message, error_message)]
+        yield new_history
 # Image upload
 def vl_image_upload(image_path,chat_history):
     messsage = {
@@ -201,22 +257,70 @@ def vl_clear():
     VL_CHAT_LIST.clear()
     return None,"",[]
 # Return answer
-def vl_submit(history_flag,chinese_flag,chat_history):
-    if len(VL_CHAT_LIST)>1:
-        messages = get_vl_message(history_flag,chinese_flag)
-        response = ollama.chat(
-            model = "llava:7b-v1.6",
-            messages = messages
-        )
-        result = response["message"]["content"]
-        output = {
-            "type":"assistant",
-            "content":result
-        }
-        chat_history.append((None,result))
-        VL_CHAT_LIST.append(output)
-    else:
-        gr.Warning('Error getting results')
+def vl_submit(history_flag, chinese_flag, chat_history):
+    """
+    Submit function for the Visual Assistant tab.
+    Processes the current chat history with the LLaVA model.
+    
+    Args:
+        history_flag: Whether to use context
+        chinese_flag: Whether to force Chinese output
+        chat_history: Current chat history
+        
+    Returns:
+        Updated chat history with the model's response
+    """
+    try:
+        if len(VL_CHAT_LIST) > 1:
+            try:
+                # Get formatted messages for the model
+                messages = get_vl_message(history_flag, chinese_flag)
+                
+                # Call the Ollama API
+                response = ollama.chat(
+                    model = "llava:7b-v1.6",
+                    messages = messages
+                )
+                
+                # Process the response
+                result = response["message"]["content"]
+                output = {
+                    "type": "assistant",
+                    "content": result
+                }
+                
+                # Update the chat history with the result
+                # For Gradio chatbot, we need to provide list of tuples (user, assistant)
+                chat_history.append((None, result))
+                VL_CHAT_LIST.append(output)
+                
+            except Exception as e:
+                # Handle errors from the API call
+                error_message = f"Error: {str(e)}"
+                logger.error(f"Error in vl_submit API call: {str(e)}")
+                
+                # Add the error message to chat history in the correct format
+                chat_history.append((None, error_message))
+                
+                # Show a warning in the UI
+                gr.Warning(error_message)
+        else:
+            # Not enough chat messages yet
+            message = "Please upload an image and add a message first."
+            gr.Warning(message)
+            # We don't modify the chat history in this case
+    except Exception as e:
+        # Handle any other unexpected errors
+        error_message = f"Unexpected error: {str(e)}"
+        logger.error(f"Unexpected error in vl_submit: {str(e)}")
+        
+        # Add the error message to chat history in the correct format
+        chat_history.append((None, error_message))
+        
+        # Show a warning in the UI
+        gr.Warning(error_message)
+    
+    # Always return the chat history, whether modified or not
     return chat_history
 def get_vl_message(history_flag,chinese_flag):
     messages = []
@@ -397,7 +501,7 @@ def api_react_agent(query, odoo_version="18.0", model_name="qwen2.5:14b"):
         model_name: The model to use
         
     Returns:
-        The generated response
+        The generated response as a string (for use with Textbox components)
     """
     try:
         logger.info(f"React agent request: model={model_name}, odoo_version={odoo_version}, query={query[:50]}...")
@@ -418,17 +522,33 @@ def api_react_agent(query, odoo_version="18.0", model_name="qwen2.5:14b"):
         
         messages = [system_message, user_message]
         
-        response = ollama.chat(
-            model=model_name,
-            messages=messages
-        )
-        
-        result = response["message"]["content"]
-        logger.info(f"Generated React agent response (first 50 chars): {result[:50]}...")
-        return result
+        # Make the API call with proper error handling
+        try:
+            response = ollama.chat(
+                model=model_name,
+                messages=messages
+            )
+            
+            # Extract and return the content from the response
+            if response and "message" in response and "content" in response["message"]:
+                result = response["message"]["content"]
+                logger.info(f"Generated React agent response (first 50 chars): {result[:50]}...")
+                return result
+            else:
+                # Handle unexpected response format
+                logger.error(f"Unexpected response format from Ollama API: {response}")
+                return "Error: Unexpected response format from model API"
+                
+        except Exception as e:
+            # Handle API call errors
+            api_error = f"API call error: {str(e)}"
+            logger.error(f"React agent API call error: {str(e)}")
+            return api_error
+            
     except Exception as e:
+        # Handle overall function errors
         error_message = f"Error: {str(e)}"
-        logger.error(f"React agent API error: {str(e)}")
+        logger.error(f"React agent general error: {str(e)}")
         # For Gradio Textbox output, returning a string is fine
         return error_message
 
