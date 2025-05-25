@@ -59,7 +59,7 @@ except Exception as e:
     logger.error(f"Error loading prompt.json: {str(e)}")
     PROMPT_DICT = {
         "React Agent": REACT_AGENT_PROMPT,
-        "Translation Assistant": "You are a helpful translation assistant. Please translate my Chinese to English, and non-Chinese to Chinese.",
+        "Translation Assistant": "You are a helpful translation assistant. Please translate my text to Hindi if it's in any other language, and translate Hindi to English.",
         "Code Assistant": "You are a professional programming assistant, please help me solve coding problems."
     }
     PROMPT_LIST = list(PROMPT_DICT.keys())
