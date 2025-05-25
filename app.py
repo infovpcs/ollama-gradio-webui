@@ -128,8 +128,10 @@ def ollama_chat(message, history, model_name, history_flag):
                 partial_message = partial_message + chunk['message']['content']
                 yield partial_message
     except Exception as e:
+        error_message = f"Error: {str(e)}"
         logger.error(f"Error in ollama_chat: {str(e)}")
-        yield f"Error: {str(e)}"
+        # For streaming to a chatbot, we need to yield properly formatted messages
+        yield error_message
 # Agent generation
 def ollama_prompt(message, history,model_name,prompt_info):
     messages = []
@@ -380,8 +382,10 @@ def api_chat(message, model_name="qwen2.5:14b", enable_context=True):
         logger.info(f"Generated response (first 50 chars): {result[:50]}...")
         return result
     except Exception as e:
+        error_message = f"Error: {str(e)}"
         logger.error(f"API error: {str(e)}")
-        return f"Error: {str(e)}"
+        # For Gradio Textbox output, returning a string is fine
+        return error_message
 
 def api_react_agent(query, odoo_version="18.0", model_name="qwen2.5:14b"):
     """
@@ -423,8 +427,10 @@ def api_react_agent(query, odoo_version="18.0", model_name="qwen2.5:14b"):
         logger.info(f"Generated React agent response (first 50 chars): {result[:50]}...")
         return result
     except Exception as e:
+        error_message = f"Error: {str(e)}"
         logger.error(f"React agent API error: {str(e)}")
-        return f"Error: {str(e)}"
+        # For Gradio Textbox output, returning a string is fine
+        return error_message
 
 # Create API endpoints for the Gradio interface
 with gr.Blocks(title="React Agent API", css=".footer {display:none}") as api_interface:
