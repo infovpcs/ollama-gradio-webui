@@ -381,14 +381,14 @@ def get_vl_message(history_flag,chinese_flag):
         }
         messages.insert(0,system_message)
     return messages
-with gr.Blocks(title="Ollama WebUI", fill_height=True) as demo:
+with gr.Blocks(title="Ollama WebUI", fill_height=True, css=".footer {display:none} .chatbot {height: 600px !important; overflow-y: auto;} .message {padding: 8px; margin: 5px 0; border-radius: 5px;} .user {background-color: #f0f8ff;} .bot {background-color: #f5f5f5;}") as demo:
     with gr.Tab("Chat"):
         with gr.Row():
             with gr.Column(scale=1):
                 model_info = gr.Dropdown(model_names, value="", allow_custom_value=True, label="Model Selection")
                 history_flag = gr.Checkbox(label="Enable Context")
             with gr.Column(scale=4):
-                chat_bot = gr.Chatbot(height=600)
+                chat_bot = gr.Chatbot(height=600, bubble=True, avatar_images=("user.png", "assistant.png"))
                 with gr.Row():
                     with gr.Column(scale=4):
                         text_box = gr.Textbox(label="Message", placeholder="Enter message...", lines=2)
@@ -554,7 +554,7 @@ def api_react_agent(query, odoo_version="18.0", model_name="qwen3:vpcs"):
         return error_message
 
 # Create API endpoints for the Gradio interface
-with gr.Blocks(title="React Agent API", css=".footer {display:none}") as api_interface:
+with gr.Blocks(title="React Agent API", css=".footer {display:none} .chatbot {height: 600px !important; overflow-y: auto;} .message {padding: 8px; margin: 5px 0; border-radius: 5px;} .user {background-color: #f0f8ff;} .bot {background-color: #f5f5f5;}") as api_interface:
     with gr.Tab("Direct Chat"):
         gr.Markdown("# Direct Chat API")
         with gr.Row():
@@ -599,5 +599,5 @@ with gr.TabbedInterface(
     pass
 
 if __name__ == "__main__":
-    logger.info("Starting Ollama WebUI with sharing enabled...")
-    app.launch(share=True)
+    logger.info("Starting Ollama WebUI with sharing and queue enabled...")
+    app.queue().launch(share=True)
