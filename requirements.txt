@@ -1,4 +1,4 @@
-gradio==4.19.2
+gradio==3.50.2
 ollama==0.1.6
 pydantic==1.10.8
 fastapi<0.100.0
