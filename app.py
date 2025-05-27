@@ -19,12 +19,13 @@ try:
 except Exception as e:
     logger.warning(f"Could not connect to Ollama API: {str(e)}")
     logger.info("Using default model list")
-    model_names = ["qwen2.5:14b", "llama3:8b", "llava:7b-v1.6", "mistral:7b", "phi3:14b"]
+    model_names = ["qwen3:vpcs", "qwen3:latest", "qwen2.5:14b", "llama3:8b", "llava:7b-v1.6", "mistral:7b", "phi3:14b"]
 
-# Add Qwen2.5:14b to the model list if not already present
-if "qwen2.5:14b" not in model_names:
-    model_names.append("qwen2.5:14b")
-    logger.info("Added qwen2.5:14b to model list")
+# Add Qwen models to the model list if not already present
+for model in ["qwen3:vpcs", "qwen3:latest", "qwen2.5:14b"]:
+    if model not in model_names:
+        model_names.append(model)
+        logger.info(f"Added {model} to model list")
 PROMPT_LIST = []
 VL_CHAT_LIST = []
 
@@ -456,13 +457,13 @@ with gr.Blocks(title="Ollama WebUI", fill_height=True) as demo:
     demo.load(fn=init)
 # Define API functions that will be exposed through the Gradio interface
 
-def api_chat(message, model_name="qwen2.5:14b", enable_context=True):
+def api_chat(message, model_name="qwen3:vpcs", enable_context=True):
     """
     API endpoint for direct model interaction.
     
     Args:
         message: The prompt to send to the model
-        model_name: The model to use (default: qwen2.5:14b)
+        model_name: The model to use (default: qwen3:vpcs)
         enable_context: Whether to enable context preservation
         
     Returns:
@@ -491,7 +492,7 @@ def api_chat(message, model_name="qwen2.5:14b", enable_context=True):
         # For Gradio Textbox output, returning a string is fine
         return error_message
 
-def api_react_agent(query, odoo_version="18.0", model_name="qwen2.5:14b"):
+def api_react_agent(query, odoo_version="18.0", model_name="qwen3:vpcs"):
     """
     API endpoint specifically for the React agent.
     
@@ -558,7 +559,7 @@ with gr.Blocks(title="React Agent API", css=".footer {display:none}") as api_int
         gr.Markdown("# Direct Chat API")
         with gr.Row():
             message_input = gr.Textbox(label="Message")
-            model_dropdown = gr.Dropdown(choices=model_names, value="qwen2.5:14b", label="Model")
+            model_dropdown = gr.Dropdown(choices=model_names, value="qwen3:vpcs", label="Model")
             context_checkbox = gr.Checkbox(label="Enable Context", value=True)
         response_output = gr.Textbox(label="Response")
         submit_button = gr.Button("Generate")
@@ -579,7 +580,7 @@ with gr.Blocks(title="React Agent API", css=".footer {display:none}") as api_int
             )
             api_model_dropdown = gr.Dropdown(
                 choices=model_names, 
-                value="qwen2.5:14b", 
+                value="qwen3:vpcs", 
                 label="Model"
             )
         agent_output = gr.Textbox(label="Response")
