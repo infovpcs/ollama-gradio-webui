@@ -2,7 +2,7 @@
 
 This project provides a user-friendly chat interface using Gradio for interacting with various Ollama models, with special support for Qwen3 models using vLLM acceleration and React agent integration specifically designed for Odoo development. The vLLM backend provides 2-4x faster inference and extended context window capabilities.
 
-![Ollama Gradio WebUI](https://i.imgur.com/X8edVTz.png)
+![Ollama Gradio WebUI](https://www.vperfectcs.com/web/image/website/1/logo/vpcsinfo?unique=eabe3d6)
 
 ## Features
 
