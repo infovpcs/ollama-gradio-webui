@@ -147,6 +147,60 @@ OLLAMA_VLLM_MAX_MODEL_LEN=8192            # Max context length
 
 These settings are automatically configured when using the `start_vllm.sh` script.
 
+## API Integration
+
+The application provides API endpoints that can be exposed through ngrok for integration with external applications.
+
+### Using the API Server
+
+You can run the application as an API server using the provided `api_server.py` script:
+
+```bash
+# Install the required dependency
+pip install pyngrok
+
+# Start the API server with ngrok tunnel
+python api_server.py --kaggle   # Add --kaggle flag if running in Kaggle
+```
+
+This will start the application and create an ngrok tunnel, providing you with a public URL for API access.
+
+### Available API Endpoints
+
+The following API endpoints are available:
+
+- **Chat API**: `/api/chat`
+  ```json
+  {
+    "message": "Your message here",
+    "model": "qwen3:vpcs-vllm",
+    "enable_context": true
+  }
+  ```
+
+- **React Agent API**: `/api/react_agent`
+  ```json
+  {
+    "query": "Create an Odoo module for inventory management",
+    "odoo_version": "18.0",
+    "model": "qwen3:vpcs-vllm"
+  }
+  ```
+
+### Integration in Kaggle
+
+You can integrate with external applications directly from Kaggle using ngrok:
+
+```python
+from pyngrok import ngrok
+
+# Create a tunnel to the Gradio app
+listener = ngrok.connect(addr="localhost:7860")
+print(f"API accessible at: {listener.public_url}")
+```
+
+A complete example notebook `kaggle_api_template.ipynb` is provided in the repository.
+
 ## Kaggle Integration
 
 This application is fully compatible with Kaggle Notebooks, allowing you to leverage Kaggle's free GPU resources for faster inference.
