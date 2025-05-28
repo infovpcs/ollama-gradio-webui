@@ -182,7 +182,7 @@ SYSTEM """You are Qwen3, an AI assistant by VPCS running on macOS. You are helpf
 PARAMETER temperature 0.7
 PARAMETER top_p 0.9
 PARAMETER top_k 40
-PARAMETER num_ctx 32768
+PARAMETER num_ctx 16384
 PARAMETER num_gpu 1
 PARAMETER num_thread 8
 EOL
@@ -200,7 +200,7 @@ SYSTEM """You are Qwen3, an AI assistant by VPCS running with vLLM optimization.
 PARAMETER temperature 0.7
 PARAMETER top_p 0.9
 PARAMETER top_k 40
-PARAMETER num_ctx 32768
+PARAMETER num_ctx 16384
 EOL
         fi
         
@@ -214,12 +214,12 @@ EOL
 fi
 
 # Environment-specific verification and startup
-if [[ "$IS_KAGGLE" == true ]]; then
+if [ "$IS_KAGGLE" = true ]; then
     # Special handling for Kaggle environment
     echo "🔍 Verifying Kaggle-specific dependencies..."
     
     # Verify vLLM installation in Kaggle
-    if python3 -c "import vllm" 2>/dev/null; then
+    if $PYTHON_CMD -c "import vllm" 2>/dev/null; then
         echo "✅ vLLM is properly installed in Kaggle"
     else
         echo "⚠️ vLLM is not available in Kaggle - will use standard mode"

@@ -2,25 +2,41 @@
 
 This project provides a user-friendly chat interface using Gradio for interacting with various Ollama models, with special support for Qwen3 models using vLLM acceleration and React agent integration specifically designed for Odoo development. The vLLM backend provides 2-4x faster inference and extended context window capabilities.
 
+![Ollama Gradio WebUI](https://i.imgur.com/X8edVTz.png)
+
 ## Features
 
-* Chat with multiple Ollama models with vLLM acceleration (2-4x faster inference)
-* Extended context window support (8192 tokens) for Qwen3:vpcs model
-* Performance tracking and benchmarking for model responses
-* React Agent API optimized for Odoo development assistance
-* Visual Assistant for image analysis with LLaVA model
-* Hindi translation capability for multilingual support
-* Multiple prompt templates for different use cases
-* Web-based interface with public sharing capability
-* File upload support for context-rich interactions
+* **vLLM Acceleration**: 2-4x faster inference compared to standard Ollama models
+* **Extended Context Window**: Up to 16K tokens for Qwen3:vpcs model for handling longer conversations
+* **Performance Tracking**: Real-time statistics including tokens/second and response times
+* **React Agent for Odoo**: Specialized AI assistant for Odoo module development following the React pattern
+* **Multi-Environment Support**: Run locally or in cloud environments like Kaggle with automatic optimization
+* **Visual Assistant**: Image analysis capabilities with LLaVA model integration
+* **Multilingual Support**: Built-in Hindi translation functionality
+* **Template System**: Customizable prompt templates for different use cases
+* **File Upload**: Process documents and code files for context-enriched responses
+* **Public Sharing**: Generate temporary public URLs for collaborative sessions
+* **Model Management**: Automatic model setup and configuration
 
 ## Applications
 
-This repository contains three main applications:
+This repository contains three main applications, each suited for different use cases:
 
-1. **app.py** - The full-featured application with all capabilities (chat, React agent, translation, visual processing)
-2. **vllm_app.py** - Enhanced version with vLLM optimization for faster inference and performance tracking
-3. **simple_chat.py** - A simplified version focused only on chat functionality
+1. **app.py** - The full-featured application 
+   * Complete UI with all capabilities
+   * Chat, React agent, translation, and visual processing
+   * Ideal for local use with standard Ollama
+
+2. **vllm_app.py** - Enhanced performance version
+   * vLLM optimization for 2-4x faster inference
+   * Performance tracking and benchmarking
+   * Extended context window support
+   * Compatible with Kaggle for cloud deployment
+
+3. **simple_chat.py** - Minimalist version
+   * Focused solely on chat functionality
+   * Lower resource requirements
+   * Simplified interface for basic use cases
 
 ## How to Run
 
@@ -39,17 +55,22 @@ The easiest way to run the application is using the provided startup scripts:
 ./start_vllm.sh
 ```
 
-The standard startup script automatically:
-- Checks if Ollama server is running and starts it if needed
-- Ensures the Qwen3:vpcs model with extended context window is created
-- Installs dependencies
-- Creates a default prompt.json file if needed
+#### What Each Script Does:
 
-The vLLM startup script (`start_vllm.sh`) additionally:
-- Sets the necessary environment variables for vLLM optimization (OLLAMA_USE_VLLM=true)
-- Configures optimal GPU memory utilization (OLLAMA_VLLM_GPU_MEMORY_UTILIZATION=0.8)
-- Sets up extended context window support (OLLAMA_VLLM_MAX_MODEL_LEN=8192)
-- Launches the optimized vLLM interface with performance tracking
+**Standard Script (`start.sh`)**
+- ✅ Detects your environment (macOS/Linux/Kaggle) automatically
+- 🔍 Checks if Ollama server is running and starts it if needed
+- 📦 Creates the Qwen3:vpcs model with extended context window (16K tokens)
+- 🔧 Installs all required dependencies
+- 📄 Sets up default prompt templates
+
+**vLLM Script (`start_vllm.sh`)**
+- 🚀 Everything in the standard script, plus:
+- 🔋 Enables vLLM acceleration for 2-4x faster inference
+- 🧠 Configures optimal GPU memory utilization (90% in Kaggle, 80% locally)
+- 📏 Sets up extended context window support (16K tokens)
+- 📊 Enables performance tracking and benchmarking
+- 🔌 Auto-detects Kaggle environment and adapts configuration
 
 ### Manual Setup
 
@@ -126,6 +147,71 @@ OLLAMA_VLLM_MAX_MODEL_LEN=8192            # Max context length
 
 These settings are automatically configured when using the `start_vllm.sh` script.
 
-### Kaggle Integration
+## Kaggle Integration
 
-This setup can be used in conjunction with the Kaggle notebook at <https://www.kaggle.com/code/vinayranavpcs/ollama-qwen3-custom> for publishing and deploying your application.
+This application is fully compatible with Kaggle Notebooks, allowing you to leverage Kaggle's free GPU resources for faster inference.
+
+### Running in Kaggle
+
+You can run the application directly in a Kaggle notebook with these simple steps:
+
+```python
+# Clone the repository
+!git clone https://github.com/infovpcs/ollama-gradio-webui.git
+%cd ollama-gradio-webui
+
+# Method 1: Using the provided scripts
+!sh install_deps.sh
+!sh start_vllm.sh
+
+# Alternative Method 2: Direct execution
+import os
+
+# Set required environment variables
+os.environ["GRADIO_SERVER_NAME"] = "0.0.0.0"
+os.environ["GRADIO_SERVER_PORT"] = "7860"
+os.environ["OLLAMA_USE_VLLM"] = "true"
+os.environ["KAGGLE_API_MODE"] = "true"
+
+# Install core dependencies if needed
+!pip install -q gradio==3.50.2 ollama==0.1.6 requests markdown
+
+# Launch the app
+!python vllm_app.py --kaggle-mode
+```
+
+### Benefits of Kaggle Integration
+
+- **Free GPU Access**: Utilize Kaggle's T4 GPUs for faster inference
+- **Public Sharing**: Generate a shareable URL that remains active for 72 hours
+- **No Setup Required**: No need to install Ollama locally
+- **Optimized Configuration**: Automatically configures for optimal performance in Kaggle's environment
+
+### Example Notebook
+
+A complete example notebook is available at: [Ollama Qwen3 Custom with vLLM](https://www.kaggle.com/code/vinayranavpcs/ollama-qwen3-custom)
+
+### Troubleshooting Kaggle Integration
+
+**Common Issues & Solutions:**
+
+1. **Internet Access Required**
+   - Ensure "Internet" is enabled in Kaggle notebook settings
+   - Found under "Settings" > "Internet" > "Internet connected: On"
+
+2. **Warning Messages**
+   - `"invalid option provided" option=gpu_memory_utilization`: Safe to ignore, these are vLLM-specific parameters
+   - `"deps.sh: [line number]: [[: not found"`: Shell syntax compatibility issue, but doesn't affect functionality
+   - Gradio version notices can be safely ignored
+
+3. **GPU Not Detected**
+   - Make sure the notebook has GPU acceleration enabled
+   - Select "Settings" > "Accelerator" > "GPU T4 x1"
+
+4. **Application Not Responding**
+   - Check if another instance of Ollama is already running
+   - Try a restart of the Kaggle notebook's runtime
+
+5. **URL Access**
+   - Kaggle generates a public URL valid for 72 hours
+   - You may need to scroll to find it in the output logs
