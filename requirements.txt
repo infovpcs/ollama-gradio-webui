@@ -1,6 +1,28 @@
+# Core dependencies
 gradio==3.50.2
 ollama==0.1.6
 pydantic==1.10.8
 fastapi<0.100.0
 starlette<0.28.0
 typing-extensions<4.7.0
+requests>=2.25.0
+markdown>=3.3.0
+numpy>=1.19.0
+
+# PyTorch must be installed BEFORE vLLM and xformers
+# Install PyTorch first! (to avoid build errors)
+torch>=2.0.0
+
+# vLLM and its dependencies (to be installed after torch)
+transformers>=4.33.0
+accelerate>=0.23.0
+
+# Note: For Mac, you might need a CPU-only version of vLLM
+# If you're running on Mac, consider not installing vLLM through pip
+# Instead use the start_vllm.sh script which handles vLLM appropriately
+
+# For Linux/Windows with CUDA:
+# vllm>=0.2.0
+
+# Optional: For improved performance with CUDA
+# See: https://pytorch.org/get-started/locally/

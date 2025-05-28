@@ -1,0 +1,10 @@
+FROM qwen3:latest
+
+# System prompt optimization
+SYSTEM """You are Qwen3, an AI assistant by VPCS running with vLLM optimization. You are helpful, harmless, and honest."""
+
+# Parameters supported by both vLLM and Ollama
+PARAMETER temperature 0.7
+PARAMETER top_p 0.9
+PARAMETER top_k 40
+PARAMETER num_ctx 8192
