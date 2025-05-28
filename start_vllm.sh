@@ -64,54 +64,54 @@ else
     echo "✅ Ollama service is already running"
 fi
 
-# Check if qwen3:vpcs model is available, pull if not
-if ! ollama list | grep -q "qwen3:vpcs"; then
+# Check if qwen3:vpcs-vllm model is available, pull if not
+if ! ollama list | grep -q "qwen3:vpcs-vllm"; then
     echo "🔄 Pulling qwen3:latest model first..."
     ollama pull qwen3:latest
     
     # Platform-specific model creation
     if [[ "$IS_MAC" == true ]]; then
-        echo "🔧 Creating custom qwen3:vpcs model with macOS optimizations..."
+        echo "🔧 Creating custom qwen3:vpcs-vllm model with macOS optimizations..."
         
         # Create a Modelfile optimized for macOS
-        cat > Modelfile.qwen3-vpcs << EOL
+        cat > Modelfile.qwen3-vpcs-vllm << EOL
 FROM qwen3:latest
 
 # System prompt optimization
-SYSTEM """You are Qwen3, an AI assistant by VPCS running on macOS. You are helpful, harmless, and honest."""
+SYSTEM """You are Qwen3, an AI assistant by vpcs-vllm running on macOS. You are helpful, harmless, and honest."""
 
 # Standard Ollama parameters for good performance
 PARAMETER temperature 0.7
 PARAMETER top_p 0.9
 PARAMETER top_k 40
-PARAMETER num_ctx 8192
+PARAMETER num_ctx 32768
 PARAMETER num_gpu 1
 PARAMETER num_thread 8
 EOL
     else
-        echo "🔧 Creating custom qwen3:vpcs model with vLLM optimization..."
+        echo "🔧 Creating custom qwen3:vpcs-vllm model with vLLM optimization..."
         
         # Create a Modelfile that is compatible with vLLM
-        cat > Modelfile.qwen3-vpcs << EOL
+        cat > Modelfile.qwen3-vpcs-vllm << EOL
 FROM qwen3:latest
 
 # System prompt optimization
-SYSTEM """You are Qwen3, an AI assistant by VPCS running with vLLM optimization. You are helpful, harmless, and honest."""
+SYSTEM """You are Qwen3, an AI assistant by vpcs-vllm running with vLLM optimization. You are helpful, harmless, and honest."""
 
 # Parameters supported by both vLLM and Ollama
 PARAMETER temperature 0.7
 PARAMETER top_p 0.9
 PARAMETER top_k 40
-PARAMETER num_ctx 8192
+PARAMETER num_ctx 32768
 EOL
     fi
     
     # Create the model
-    ollama create qwen3:vpcs -f Modelfile.qwen3-vpcs
+    ollama create qwen3:vpcs-vllm -f Modelfile.qwen3-vpcs-vllm
     
     echo "✅ Model created successfully with platform-specific optimizations."
 else
-    echo "✅ qwen3:vpcs model is already available"
+    echo "✅ qwen3:vpcs-vllm model is already available"
 fi
 
 # Platform-specific verification

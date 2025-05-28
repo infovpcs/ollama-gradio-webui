@@ -1,8 +1,8 @@
 """
-Ollama Gradio WebUI with vLLM Optimization for Qwen3:vpcs
+Ollama Gradio WebUI with vLLM Optimization for Qwen3:vpcs-vllm
 
 This application provides a Gradio web interface for interacting with locally running
-Ollama models, with specific optimizations for vLLM-backed models like Qwen3:vpcs.
+Ollama models, with specific optimizations for vLLM-backed models like Qwen3:vpcs-vllm.
 
 Features:
 - Chat interface with conversation history
@@ -48,7 +48,7 @@ def check_vllm_status():
         response = requests.post(
             "http://localhost:11434/api/chat",
             json={
-                "model": "qwen3:vpcs",
+                "model": "qwen3:vpcs-vllm",
                 "messages": [
                     {"role": "user", "content": "Are you running on vLLM backend? Reply with only yes or no."}
                 ],
@@ -82,16 +82,16 @@ try:
 except Exception as e:
     logger.warning(f"Could not connect to Ollama API: {str(e)}")
     logger.info("Using default model list")
-    model_names = ["qwen3:vpcs", "qwen3:latest", "qwen2.5:14b", "llama3:8b", "llava:7b-v1.6", "mistral:7b", "phi3:14b"]
+    model_names = ["qwen3:vpcs-vllm", "qwen3:latest", "qwen2.5:14b", "llama3:8b", "llava:7b-v1.6", "mistral:7b", "phi3:14b"]
 
 # Add Qwen models to the model list if not already present
-for model in ["qwen3:vpcs", "qwen3:latest", "qwen2.5:14b"]:
+for model in ["qwen3:vpcs-vllm", "qwen3:latest", "qwen2.5:14b"]:
     if model not in model_names:
         model_names.append(model)
         logger.info(f"Added {model} to model list")
 
-# Check if qwen3:vpcs is available and make it the default if so
-default_model = "qwen3:vpcs" if "qwen3:vpcs" in model_names else model_names[0]
+# Check if qwen3:vpcs-vllm is available and make it the default if so
+default_model = "qwen3:vpcs-vllm" if "qwen3:vpcs-vllm" in model_names else model_names[0]
 logger.info(f"Using {default_model} as default model")
 
 # Model parameters
