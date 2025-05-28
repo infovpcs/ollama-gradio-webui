@@ -128,4 +128,4 @@ These settings are automatically configured when using the `start_vllm.sh` scrip
 
 ### Kaggle Integration
 
-This setup can be used in conjunction with the Kaggle notebook at `src/odoo_code_agent/examples/kaggle_qwen3_vllm_notebook.ipynb` for publishing and deploying your application.
+This setup can be used in conjunction with the Kaggle notebook at <https://www.kaggle.com/code/vinayranavpcs/ollama-qwen3-custom> for publishing and deploying your application.
